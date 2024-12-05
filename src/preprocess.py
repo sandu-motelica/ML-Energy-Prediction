@@ -1,50 +1,122 @@
-import pandas as pd
 import os
+import pandas as pd
+from sklearn.preprocessing import KBinsDiscretizer
+
 
 class Data:
-    def __init__(self, xlsx_path):
-        self.path = xlsx_path
+    def __init__(self, excel_paths = None):
+        self.excel_paths = excel_paths
         self.data = None
 
-    def load_data(self):
-        self.data = pd.read_excel(self.path)
-        self.data['Data'] = pd.to_datetime(self.data['Data'], dayfirst=True, errors='coerce')
-        self.data = self.data.dropna(subset=['Data'])
-        print("Data successfully loaded.")
-        return self.data
+    def process_and_save_csv(self, destination_folder="data\\processed_data", add_time_attributes=False,
+                             add_production_attributes=False):
 
-    def group_data(self):
-        grouped_data = {}
-        for year in self.data['Data'].dt.year.unique():
-            jan_nov = self.data[(self.data['Data'].dt.year == year) & (self.data['Data'].dt.month <= 11)]
-            december = self.data[(self.data['Data'].dt.year == year) & (self.data['Data'].dt.month == 12)]
-            grouped_data[f"{year}_jan_nov"] = jan_nov
-            grouped_data[f"{year}_dec"] = december
-        print("Data successfully grouped by year and month.")
-        return grouped_data
+        if not os.path.exists(destination_folder):
+            os.makedirs(destination_folder)
 
-    def aggregate_data(self, freq='h'):
-        self.data['Data'] = pd.to_datetime(self.data['Data'], dayfirst=True, errors='coerce')
+        all_data = []
+        december_data = []
 
-        self.data = self.data.dropna(subset=['Data'])
+        for path in self.excel_paths:
+            year = int(os.path.basename(path).split('.')[0])
+            data = pd.read_excel(path)
 
-        self.data.set_index('Data', inplace=True)
+            data = self.remove_invalid_rows(data)
 
-        self.data = self.data.apply(pd.to_numeric, errors='coerce')
+            data['Data'] = pd.to_datetime(data['Data'], dayfirst=True, errors='coerce')
+            data = data.dropna(subset=['Data'])
 
-        self.data = self.data.resample(freq).sum(numeric_only=True).reset_index()
+            self.validate_data(data)
 
-        print(f"Data successfully aggregated to {freq} level.")
-        return self.data
+            if add_time_attributes:
+                data = self.add_time_attributes(data)
 
-    def save_grouped_data(self, grouped_data, output_dir="data\\processed_data"):
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-        for group_name, df in grouped_data.items():
-            output_path = f"{output_dir}/{group_name}.csv"
-            df.to_csv(output_path, index=False)
-            print(f"File saved: {output_path}")
+            if add_production_attributes:
+                data = self.add_production_attributes(data)
 
-    def save_aggregated_data(self, output_path="data\\processed_data\\aggregated_data.csv"):
-        self.data.to_csv(output_path, index=False)
-        print(f"Aggregated data saved to: {output_path}")
+            december = data[data['Data'].dt.month == 12]
+            december_data.append(december)
+
+            data = data[data['Data'].dt.month < 12]
+
+            csv_path = os.path.join(destination_folder, f"{year}.csv")
+            data.to_csv(csv_path, index=False)
+            print(f"Saved: {csv_path}")
+
+            all_data.append(data)
+
+        concatenated_data = pd.concat(all_data, ignore_index=True)
+
+        concatenated_path = os.path.join(destination_folder, "all_years.csv")
+        concatenated_data.to_csv(concatenated_path, index=False)
+        print(f"Saved all data (excluding December): {concatenated_path}")
+
+        december_data = pd.concat(december_data, ignore_index=True)
+        december_path = os.path.join(destination_folder, "all_december.csv")
+        december_data.to_csv(december_path, index=False)
+        print(f"Saved all December data: {december_path}")
+
+    @staticmethod
+    def validate_data(data):
+        required_columns = ['Eolian[MW]', 'Foto[MW]', 'Carbune[MW]', 'Hidrocarburi[MW]',
+                            'Ape[MW]', 'Nuclear[MW]', 'Data']
+        for col in required_columns:
+            if col not in data.columns:
+                raise ValueError(f"Missing required column: {col}")
+
+    @staticmethod
+    def add_time_attributes(data):
+        data['Year'] = data['Data'].dt.year
+        data['Month'] = data['Data'].dt.month
+        data['Day_of_Week'] = data['Data'].dt.dayofweek
+        data['Hour'] = data['Data'].dt.hour
+        return data
+
+    @staticmethod
+    def add_production_attributes(data):
+        data['Intermittent_Production'] = data['Eolian[MW]'] + data['Foto[MW]']
+        data['Constant_Production'] = (
+                data['Carbune[MW]'] + data['Hidrocarburi[MW]'] +
+                data['Ape[MW]'] + data['Nuclear[MW]']
+        )
+        return data
+
+    @staticmethod
+    def remove_invalid_rows(data):
+        invalid_rows = data.apply(
+            lambda row: any('*' in str(value) for value in row), axis=1
+        )
+
+        cleaned_data = data[~invalid_rows]
+        return cleaned_data
+
+    def load_csv(self, csv_path):
+        try:
+            self.data = pd.read_csv(csv_path, low_memory=False)
+
+            self.data['Data'] = pd.to_datetime(
+                self.data['Data'],
+                format="%Y-%m-%d %H:%M:%S",
+                errors='coerce'
+            )
+            self.data = self.data.dropna(subset=['Data'])
+
+            print(f"Data loaded from {csv_path}.")
+        except FileNotFoundError:
+            print(f"Error: File not found at path {csv_path}\n")
+            raise
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            raise
+
+    def get_train_test_split(self, year, test_month=12):
+        if self.data is None:
+            raise ValueError("Data is not loaded. Use load_csv().")
+
+        train_data = self.data[(self.data['Year'] == year) & (self.data['Month'] < test_month)]
+        test_data = self.data[(self.data['Year'] == year) & (self.data['Month'] == test_month)]
+        return train_data, test_data
+
+    def discretize_columns(self, columns, n_bins=10, encode='ordinal', strategy='uniform'):
+        discretizer = KBinsDiscretizer(n_bins=n_bins, encode=encode, strategy=strategy)
+        self.data[columns] = discretizer.fit_transform(self.data[columns])
