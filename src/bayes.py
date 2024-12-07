@@ -1,24 +1,41 @@
 import numpy as np
-import pandas as pd
-from sklearn.naive_bayes import GaussianNB
+from sklearn.preprocessing import KBinsDiscretizer
+from evaluate import evaluate_model
 
 class BayesianRegressor:
-    def __init__(self, bucket_size=10):
-        self.bucket_size = bucket_size
-        self.model = GaussianNB()
+    def __init__(self, data, feature_columns, target_column, test_data=None, n_bins=10):
+        self.data = data
+        self.feature_columns = feature_columns
+        self.target_column = target_column
+        self.test_data = test_data.copy() if test_data is not None else None
+        self.n_bins = n_bins
+        self.probabilities = None
 
-    def discretize_target(self, y):
-        bins = np.linspace(y.min(), y.max(), self.bucket_size)
-        labels = range(len(bins) - 1)
-        y_discretized = pd.cut(y, bins=bins, labels=labels, include_lowest=True)
-        return y_discretized.astype(int), bins
+    def preprocess_data(self):
+        discretizer = KBinsDiscretizer(n_bins=self.n_bins, encode='ordinal', strategy='uniform')
+        self.data.loc[:, self.feature_columns] = discretizer.fit_transform(self.data[self.feature_columns])
+        if self.test_data is not None:
+            self.test_data.loc[:, self.feature_columns] = discretizer.transform(self.test_data[self.feature_columns])
 
-    def fit(self, X, y):
-        y_discretized, self.bins = self.discretize_target(y)
-        self.model.fit(X, y_discretized)
-        print("Bayesian Model trained successfully.")
+    def calculate_probabilities(self):
+        probabilities = {}
+        grouped = self.data.groupby(self.feature_columns)[self.target_column]
+        for group, values in grouped:
+            probabilities[group] = values.mean()
+        self.probabilities = probabilities
 
-    def predict(self, X):
-        predictions = self.model.predict(X)
-        centers = (self.bins[:-1] + self.bins[1:]) / 2
-        return centers[predictions]
+    def predict(self, test_data):
+        predictions = []
+        for _, row in test_data.iterrows():
+            features = tuple(row[self.feature_columns])
+            prediction = self.probabilities.get(features, np.mean(self.data[self.target_column]))
+            predictions.append(prediction)
+        return np.array(predictions)
+
+    def train_and_evaluate(self):
+        self.preprocess_data()
+        self.calculate_probabilities()
+        predictions = self.predict(self.test_data)
+
+        evaluate_model(predictions, self.test_data[self.target_column], "Bayesian Regression")
+        return predictions
