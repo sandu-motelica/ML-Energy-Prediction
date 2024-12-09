@@ -32,10 +32,9 @@ class BayesianRegressor:
             predictions.append(prediction)
         return np.array(predictions)
 
-    def train_and_evaluate(self):
+    def train(self):
         self.preprocess_data()
         self.calculate_probabilities()
         predictions = self.predict(self.test_data)
 
-        evaluate_model(predictions, self.test_data[self.target_column], "Bayesian Regression")
         return predictions

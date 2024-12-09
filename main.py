@@ -17,59 +17,61 @@ def preprocess_data():
     data_handler = Data(excel_files)
     data_handler.process_and_save_csv(add_time_attributes=True, add_production_attributes=True)
 
+def summarize_results(all_results):
+    metrics = ["mae", "rmse", "r2"]
+    best_overall = {metric: None for metric in metrics}
+
+    print("\n=== Summary of Results ===")
+    for result in all_results:
+        print(f"Feature Set: {result['features']}")
+        for model_result in result['results']:
+            print(f"  {model_result['name']}: MAE={model_result['mae']:.4f}, RMSE={model_result['rmse']:.4f}, R²={model_result['r2']:.4f}")
+
+        for metric in metrics:
+            best_model = min(result['results'], key=lambda x: x[metric]) if metric != "r2" else max(result['results'], key=lambda x: x[metric])
+            if not best_overall[metric] or (
+                best_overall[metric][metric] > best_model[metric] if metric != "r2" else best_overall[metric][metric] < best_model[metric]
+            ):
+                best_overall[metric] = best_model
+
+    print("\n=== Best Models by Metric ===")
+    for metric, model in best_overall.items():
+        print(f"Best Model by {metric.upper()}: {model['name']} with {metric.upper()}={model[metric]:.4f}")
+    print("\n")
 
 def main():
     # preprocess_data()
 
-    print("\nTest 2023 only")
     data_2023 = Data.load_csv("data/processed_data/2023.csv")
     data_train, data_test = Data.get_train_test_split(data_2023, 2023)
 
-    feature_columns = ['Month', 'Day_of_Week', 'Hour', 'Intermittent_Production', 'Constant_Production']
+    feature_sets = [
+        ['Day_of_Week', 'Hour', 'Consum[MW]', 'Intermittent_Production', 'Constant_Production'],
+        ['Day_of_Week', 'Hour', 'Consum[MW]', 'Productie[MW]'],
+        ['Hour', 'Consum[MW]', 'Productie[MW]'],
+        ['Consum[MW]', 'Productie[MW]']
+    ]
     target_column = 'Sold[MW]'
 
-    bayesian_prediction(data_train, data_test, feature_columns, target_column)
+    all_results = []
 
-    direct_model = direct_prediction(data_train, data_test, feature_columns, target_column)
-    consum_model, productie_model = component_prediction(data_train, data_test, feature_columns)
-    bucket_model = bucket_prediction(data_train, data_test, feature_columns)
+    for feature_columns in feature_sets:
+        result = train_with_all_classifiers(data_train, data_test, feature_columns, target_column)
+        all_results.append(result)
 
-    feature_columns = ['Day_of_Week', 'Hour', 'Consum[MW]', 'Productie[MW]']
+    summarize_results(all_results)
 
-    bayesian_prediction(data_train, data_test, feature_columns, target_column)
+    data_train_all_years = Data.load_csv("data/processed_data/all_years.csv")
+    data_test_all_years = Data.load_csv("data/processed_data/all_december.csv")
+    _, data_test_2023 = Data.get_train_test_split(data_test_all_years, 2023)
 
-    direct_model1 = direct_prediction(data_train, data_test, feature_columns, target_column)
-    # consum_model1, productie_model1 = component_prediction(data_train, data_test, feature_columns)
-    bucket_model1 = bucket_prediction(data_train, data_test, feature_columns)
+    all_results = []
 
-    print("=== Feature Importances ===")
-    print("Feature importances (Approach 1):", direct_model.feature_importances())
-    print("Feature importances (Approach 2 - Consum):", consum_model.feature_importances())
-    print("Feature importances (Approach 2 - Productie):", productie_model.feature_importances())
-    print("Feature importances (Approach 3 - Bucketing):", bucket_model.feature_importances())
+    for feature_columns in feature_sets:
+        result = train_with_all_classifiers(data_train_all_years, data_test_2023, feature_columns, target_column)
+        all_results.append(result)
 
-    # print("\nTest all data")
-    #
-    # data_all = Data.load_csv("data/processed_data/all_years.csv")
-    # data_all_december = Data.load_csv("data/processed_data/all_december.csv")
-    # _, data_2023_december = Data.get_train_test_split(data_all_december, 2023)
-    #
-    # feature_columns = ['Month', 'Day_of_Week', 'Hour', 'Intermittent_Production', 'Constant_Production']
-    # target_column = 'Sold[MW]'
-    #
-    # bayesian_prediction(data_all, data_2023_december, feature_columns, target_column)
-    #
-    #
-    # direct_model = direct_prediction(data_all, data_2023_december, feature_columns, target_column)
-    # consum_model, productie_model = component_prediction(data_all, data_2023_december, feature_columns)
-    # bucket_model = bucket_prediction(data_all, data_2023_december, feature_columns)
-    #
-    # print("=== Feature Importances ===")
-    # print("Feature importances (Approach 1):", direct_model.feature_importances())
-    # print("Feature importances (Approach 2 - Consum):", consum_model.feature_importances())
-    # print("Feature importances (Approach 2 - Productie):", productie_model.feature_importances())
-    # print("Feature importances (Approach 3 - Bucketing):", bucket_model.feature_importances())
-
+    summarize_results(all_results)
 
 
 if __name__ == "__main__":

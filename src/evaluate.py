@@ -15,3 +15,4 @@ def evaluate_model(predictions, y_test, approach_name):
     print(f"  MAE: {mae:.2f}")
     print(f"  RMSE: {rmse:.2f}")
     print(f"  R²: {r2:.2f}\n")
+    return mae, rmse, r2

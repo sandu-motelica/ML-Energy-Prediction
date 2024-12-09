@@ -1,6 +1,4 @@
-from pandas.io.xml import preprocess_data
 from sklearn.tree import DecisionTreeRegressor
-from sklearn.metrics import mean_absolute_error
 import pandas as pd
 from preprocess import Data
 
@@ -30,8 +28,6 @@ class ID3Regressor:
 
     def train(self, year=None, test_month=12):
         X_train, y_train, X_test, y_test = self.prepare_id3_data(year, test_month)
-
-        print(f"ID3 TRAIN: \nTrain set shape: {X_train.shape}, Test set shape: {X_test.shape}")
 
         if X_test.shape[0] == 0:
             raise ValueError(f"No test data available for year={year} and test_month={test_month}. Check your dataset.")
@@ -67,5 +63,4 @@ class ID3Regressor:
             labels=False,
             include_lowest=True
         )
-        print("Discretized 'Sold[MW]' into 'Sold_bucket' with", n_bins, "bins.")
         return result
