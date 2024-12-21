@@ -48,8 +48,8 @@ def main():
     feature_sets = [
         ['Day_of_Week', 'Hour', 'Consum[MW]', 'Intermittent_Production', 'Constant_Production'],
         ['Day_of_Week', 'Hour', 'Consum[MW]', 'Productie[MW]'],
-        ['Hour', 'Consum[MW]', 'Productie[MW]'],
-        ['Consum[MW]', 'Productie[MW]']
+        ['Consum[MW]', 'Productie[MW]'],
+        ['Year', 'Day_of_Week', 'Hour']
     ]
     target_column = 'Sold[MW]'
 
