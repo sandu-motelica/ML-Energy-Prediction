@@ -1,8 +1,10 @@
 import numpy as np
 from sklearn.preprocessing import KBinsDiscretizer
-from evaluate import evaluate_model
 
 class BayesianRegressor:
+    """
+    Implements a naive Bayesian approach for regression using discretized features.
+    """
     def __init__(self, data, feature_columns, target_column, test_data=None, n_bins=10):
         self.data = data
         self.feature_columns = feature_columns
@@ -12,6 +14,9 @@ class BayesianRegressor:
         self.probabilities = None
 
     def preprocess_data(self):
+        """
+        Discretizes continuous features into bins for Bayesian computation.
+        """
         discretizer = KBinsDiscretizer(n_bins=self.n_bins, encode='ordinal', strategy='uniform')
         self.data.loc[:, self.feature_columns] = discretizer.fit_transform(self.data[self.feature_columns])
         if self.test_data is not None:
@@ -33,6 +38,9 @@ class BayesianRegressor:
         return np.array(predictions)
 
     def train(self):
+        """
+        Trains the Bayesian model by calculating probabilities for discretized features.
+        """
         self.preprocess_data()
         self.calculate_probabilities()
         predictions = self.predict(self.test_data)
