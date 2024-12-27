@@ -1,0 +1,17 @@
+Feature Set,Model,MAE,RMSE,R2
+"['Day_of_Week', 'Hour']",Bayesian Prediction,702.4020310019087,841.661207604038,0.13552394022406278
+"['Day_of_Week', 'Hour']",Direct Prediction,690.1254200998129,832.5471691513027,0.15414475654055515
+"['Day_of_Week', 'Hour']",Component Prediction,1242.914732842637,1450.3642796113256,-1.567039428530041
+"['Day_of_Week', 'Hour']",Bucket Prediction,706.0400972590628,859.7275975501717,0.09801340165801165
+"['Day_of_Week', 'Hour', 'Consum[MW]', 'Intermittent_Production', 'Constant_Production']",Bayesian Prediction,486.6302341386241,627.1374224138277,0.5200413950933684
+"['Day_of_Week', 'Hour', 'Consum[MW]', 'Intermittent_Production', 'Constant_Production']",Direct Prediction,144.6826554671382,229.68979314262563,0.9356184034523369
+"['Day_of_Week', 'Hour', 'Consum[MW]', 'Intermittent_Production', 'Constant_Production']",Component Prediction,1639.1864379726571,1937.3521537844922,-3.58031649918414
+"['Day_of_Week', 'Hour', 'Consum[MW]', 'Intermittent_Production', 'Constant_Production']",Bucket Prediction,214.05893015030946,280.8725182096161,0.9037286980881072
+"['Day_of_Week', 'Hour', 'Consum[MW]', 'Productie[MW]']",Bayesian Prediction,461.4490100778594,575.9441253473776,0.5952013508315659
+"['Day_of_Week', 'Hour', 'Consum[MW]', 'Productie[MW]']",Direct Prediction,29.57390215148836,62.619931105733464,0.9952147622529909
+"['Day_of_Week', 'Hour', 'Consum[MW]', 'Productie[MW]']",Component Prediction,1326.4355511720153,1613.323162433735,-2.1762968723312492
+"['Day_of_Week', 'Hour', 'Consum[MW]', 'Productie[MW]']",Bucket Prediction,155.2946065428824,184.06842625438665,0.9586536718292906
+"['Consum[MW]', 'Productie[MW]']",Bayesian Prediction,457.6564076337166,554.6481748351274,0.6245833540017558
+"['Consum[MW]', 'Productie[MW]']",Direct Prediction,23.50022104332449,48.03815165206477,0.9971838814933617
+"['Consum[MW]', 'Productie[MW]']",Component Prediction,979.3639849178243,1064.0081015404976,-0.38155512571793837
+"['Consum[MW]', 'Productie[MW]']",Bucket Prediction,152.8790893015031,179.59833766281548,0.960637472767602

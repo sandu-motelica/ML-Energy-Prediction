@@ -1,0 +1,17 @@
+Feature Set,Model,MAE,RMSE,R2
+"['Day_of_Week', 'Hour']",Bayesian Prediction,785.3699745819736,978.6376151815807,-0.16875143673469784
+"['Day_of_Week', 'Hour']",Direct Prediction,776.4000326397107,972.5784044115751,-0.15432364842451451
+"['Day_of_Week', 'Hour']",Component Prediction,1009.3320084050548,1174.8449661017594,-0.6843776483861748
+"['Day_of_Week', 'Hour']",Bucket Prediction,707.3499115826702,844.8853564082127,0.12888816353149202
+"['Day_of_Week', 'Hour', 'Consum[MW]', 'Intermittent_Production', 'Constant_Production']",Bayesian Prediction,458.50360020633093,582.5001928427038,0.585933118140437
+"['Day_of_Week', 'Hour', 'Consum[MW]', 'Intermittent_Production', 'Constant_Production']",Direct Prediction,62.18729737695256,83.20633809916337,0.9915512751372386
+"['Day_of_Week', 'Hour', 'Consum[MW]', 'Intermittent_Production', 'Constant_Production']",Component Prediction,1366.614036299794,1662.722526341287,-2.3737889394991996
+"['Day_of_Week', 'Hour', 'Consum[MW]', 'Intermittent_Production', 'Constant_Production']",Bucket Prediction,190.31145004420867,227.144872987465,0.9370371720334671
+"['Day_of_Week', 'Hour', 'Consum[MW]', 'Productie[MW]']",Bayesian Prediction,418.4845320085213,533.1383638826583,0.653136806151444
+"['Day_of_Week', 'Hour', 'Consum[MW]', 'Productie[MW]']",Direct Prediction,11.314176245210728,16.64505718528019,0.9996618970718253
+"['Day_of_Week', 'Hour', 'Consum[MW]', 'Productie[MW]']",Component Prediction,735.0506634040537,885.9665523088655,0.042115817796888555
+"['Day_of_Week', 'Hour', 'Consum[MW]', 'Productie[MW]']",Bucket Prediction,173.82294429708222,200.30476172204052,0.9510378030842614
+"['Consum[MW]', 'Productie[MW]']",Bayesian Prediction,442.3263520954213,545.0871960080493,0.6374146019981901
+"['Consum[MW]', 'Productie[MW]']",Direct Prediction,9.859895372826408,15.550090154457926,0.9997049170126616
+"['Consum[MW]', 'Productie[MW]']",Component Prediction,292.41776520462815,354.0325530906598,0.8470446250676245
+"['Consum[MW]', 'Productie[MW]']",Bucket Prediction,173.61295313881521,199.9409202085168,0.9512155152885486

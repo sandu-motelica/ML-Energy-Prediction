@@ -29,10 +29,12 @@ The dataset is downloaded from Transelectrica's website: **SEN Grafic**.
    - Validation and cleaning of the dataset.
    - Adding additional attributes (e.g., time, constant/intermittent production).
    - Discretization of continuous variables (for the Bayesian algorithm).
+   - Feature importance analysis to refine feature sets.
 
 2. **Algorithm Adaptation**:
    - **ID3**:
-     - Use bucketing for the target variable `Sold[MW]`.
+     - Direct prediction of continuous values for `Sold[MW]` using `DecisionTreeRegressor`.
+     - Use bucketing for the target variable `Sold[MW]` as an exploratory adaptation.
      - Compute feature importance for better interpretability.
    - **Bayesian Classification**:
      - Discretize continuous variables and compute conditional probabilities.
@@ -104,9 +106,9 @@ The dataset is downloaded from Transelectrica's website: **SEN Grafic**.
 ## Results
 
 The models are evaluated using:
-- **Direct Prediction** of `Sold[MW]` using ID3.
+- **Direct Prediction** of `Sold[MW]` using ID3, which provided the best results (MAE: 9.85, R²: 0.99).
 - **Component Prediction** (`Consum[MW]` and `Producție[MW]`) to derive `Sold[MW]`.
-- **Bucket Prediction** with Bayesian classification.
+- **Bucket Prediction** using ID3 and Bayesian classification, which performed less effectively due to discretization limitations.
 
 Performance metrics:
 - **MAE**: Mean Absolute Error.
@@ -117,4 +119,4 @@ Detailed results and comparative analysis are provided in the `reports` folder.
 
 ## Contribution
 
-This project is developed for educational purposes.
+This project is developed for educational purposes. Suggestions for improvements or additional analyses are welcome.
